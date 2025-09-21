@@ -6,6 +6,7 @@ pragma solidity ^0.8.20;
  * notice - Minimal voting contract: admin registers voters, starts voting for a duration,
  * registered voters can vote once for Proposal A or B, anyone can read result after deadline.
  */
+
 contract SimpleVoting {
     address public admin;
     uint256 public votingDeadline;
@@ -18,7 +19,7 @@ contract SimpleVoting {
 
     string public proposalA = "Proposal A";
     string public proposalB = "Proposal B";
-
+// Events
     event VoterRegistered(address voter);
     event VotingStarted(uint256 deadline);
     event Voted(address voter, string option);
@@ -36,7 +37,7 @@ contract SimpleVoting {
     constructor() {
         admin = msg.sender;
     }
-
+// Register a list of voters
     function registerVoters(address[] calldata _voters) external onlyAdmin {
         for (uint i = 0; i < _voters.length; i++) {
             require(_voters[i] != address(0), "Invalid address");
@@ -45,14 +46,14 @@ contract SimpleVoting {
             emit VoterRegistered(_voters[i]);
         }
     }
-
+// Start voting with a duration in seconds
     function startVoting(uint256 durationSeconds) external onlyAdmin {
         require(votingDeadline == 0, "Already started");
         require(durationSeconds > 0, "Invalid duration");
         votingDeadline = block.timestamp + durationSeconds;
         emit VotingStarted(votingDeadline);
     }
-
+// Cast vote (0 = Proposal A, 1 = Proposal B)
     function vote(uint8 option) external onlyWhileOpen {
         require(isVoter[msg.sender], "Not registered");
         require(!hasVoted[msg.sender], "Already voted");
@@ -67,7 +68,7 @@ contract SimpleVoting {
             emit Voted(msg.sender, proposalB);
         }
     }
-
+//Get result after deadline
     function getResult() external view returns (string memory winner) {
         require(block.timestamp >= votingDeadline, "Voting not ended yet");
         if (votesA > votesB) return proposalA;
